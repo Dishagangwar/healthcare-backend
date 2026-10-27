@@ -1,0 +1,1121 @@
+{
+  "info": {
+    "name": "Healthcare Backend API",
+    "description": "Django + DRF + PostgreSQL healthcare backend.\n\nRun the requests top to bottom: Register and Login store the JWT and the created ids in collection variables, so nothing needs to be copied by hand.\n\nSet `base_url` if the server is not on http://127.0.0.1:8000.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "patient_id",
+      "value": ""
+    },
+    {
+      "key": "doctor_id",
+      "value": ""
+    },
+    {
+      "key": "mapping_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates an account and returns the user plus a JWT pair.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Disha Gupta\",\n  \"email\": \"disha@example.com\",\n  \"password\": \"StrongPass!234\",\n  \"confirm_password\": \"StrongPass!234\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('request succeeded', () => pm.expect(body.success).to.be.true);",
+                  "if (body.data && body.data.tokens) {",
+                  "    pm.collectionVariables.set('access_token', body.data.tokens.access);",
+                  "    pm.collectionVariables.set('refresh_token', body.data.tokens.refresh);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Exchanges credentials for a JWT pair; stores the tokens.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"disha@example.com\",\n  \"password\": \"StrongPass!234\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('request succeeded', () => pm.expect(body.success).to.be.true);",
+                  "if (body.data && body.data.tokens) {",
+                  "    pm.collectionVariables.set('access_token', body.data.tokens.access);",
+                  "    pm.collectionVariables.set('refresh_token', body.data.tokens.refresh);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Returns a fresh access token.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('has access token', () => pm.expect(body).to.have.property('access'));",
+                  "pm.collectionVariables.set('access_token', body.access);",
+                  "if (body.refresh) pm.collectionVariables.set('refresh_token', body.refresh);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "The authenticated user's own record."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with wrong password (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Identical to the unknown-email response, by design.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"disha@example.com\",\n  \"password\": \"WrongPassword!1\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request rejected', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Patients",
+      "item": [
+        {
+          "name": "Create patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/patients/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ]
+            },
+            "description": "Adds a patient owned by the authenticated user.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Asha Mehta\",\n  \"date_of_birth\": \"1990-05-17\",\n  \"gender\": \"FEMALE\",\n  \"blood_group\": \"O+\",\n  \"phone\": \"+919876543210\",\n  \"email\": \"asha@example.com\",\n  \"address\": \"12 Linking Road, Mumbai\",\n  \"medical_history\": \"Mild asthma.\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('request succeeded', () => pm.expect(body.success).to.be.true);",
+                  "if (body.data && body.data.id) pm.collectionVariables.set('patient_id', body.data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/patients/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ]
+            },
+            "description": "Only the caller's own patients."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('paginated', () => pm.expect(pm.response.json()).to.have.property('results'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List patients (filtered)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/patients/?gender=FEMALE&ordering=-created_at&page_size=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "gender",
+                  "value": "FEMALE"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Filtering, search and ordering on the list endpoint."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get patient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/patients/{{patient_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patient_id}}"
+              ]
+            },
+            "description": "Retrieve one patient by id."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update patient (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/patients/{{patient_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patient_id}}"
+              ]
+            },
+            "description": "Full replacement of the record.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Asha R Mehta\",\n  \"date_of_birth\": \"1990-05-17\",\n  \"gender\": \"FEMALE\",\n  \"blood_group\": \"O+\",\n  \"phone\": \"+919876543210\",\n  \"email\": \"asha@example.com\",\n  \"address\": \"15 Linking Road, Mumbai\",\n  \"medical_history\": \"Mild asthma. Reviewed.\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update patient (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/patients/{{patient_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patient_id}}"
+              ]
+            },
+            "description": "Partial update of a single field.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blood_group\": \"O-\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create patient with bad data (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/patients/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ]
+            },
+            "description": "Shows the error envelope with per-field details.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"X\",\n  \"date_of_birth\": \"2090-01-01\",\n  \"gender\": \"ROBOT\",\n  \"phone\": \"not-a-phone\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request rejected', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Doctors",
+      "item": [
+        {
+          "name": "Create doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors"
+              ]
+            },
+            "description": "Adds a doctor to the shared directory.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Rohan Kapoor\",\n  \"specialization\": \"CARDIOLOGY\",\n  \"license_number\": \"MCI-10045\",\n  \"email\": \"rohan.kapoor@example.com\",\n  \"phone\": \"+919812345678\",\n  \"years_of_experience\": 12,\n  \"consultation_fee\": \"850.00\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('request succeeded', () => pm.expect(body.success).to.be.true);",
+                  "if (body.data && body.data.id) pm.collectionVariables.set('doctor_id', body.data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List doctors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors"
+              ]
+            },
+            "description": "Every doctor, readable by any authenticated user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('paginated', () => pm.expect(pm.response.json()).to.have.property('results'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List doctors (filtered)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/?specialization=CARDIOLOGY&is_available=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors"
+              ],
+              "query": [
+                {
+                  "key": "specialization",
+                  "value": "CARDIOLOGY"
+                },
+                {
+                  "key": "is_available",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Filter by specialization and availability."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get doctor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/{{doctor_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors",
+                "{{doctor_id}}"
+              ]
+            },
+            "description": "Retrieve one doctor by id."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update doctor (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/{{doctor_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors",
+                "{{doctor_id}}"
+              ]
+            },
+            "description": "Only the user who added the doctor may update it.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Rohan Kapoor\",\n  \"specialization\": \"CARDIOLOGY\",\n  \"license_number\": \"MCI-10045\",\n  \"email\": \"rohan.kapoor@example.com\",\n  \"phone\": \"+919812345678\",\n  \"years_of_experience\": 13,\n  \"consultation_fee\": \"900.00\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update doctor (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/{{doctor_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors",
+                "{{doctor_id}}"
+              ]
+            },
+            "description": "Mark the doctor unavailable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_available\": false\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate license number (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors"
+              ]
+            },
+            "description": "License numbers are unique across the directory.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Someone Else\",\n  \"specialization\": \"NEUROLOGY\",\n  \"license_number\": \"MCI-10045\",\n  \"email\": \"someone@example.com\",\n  \"phone\": \"+919812345679\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request rejected', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Patient-doctor mappings",
+      "item": [
+        {
+          "name": "Assign doctor to patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mappings/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mappings"
+              ]
+            },
+            "description": "Creates the assignment and stores its id.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient\": \"{{patient_id}}\",\n  \"doctor\": \"{{doctor_id}}\",\n  \"notes\": \"Referred for ECG.\",\n  \"is_primary\": true\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('request succeeded', () => pm.expect(body.success).to.be.true);",
+                  "if (body.data && body.data.id) pm.collectionVariables.set('mapping_id', body.data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List all mappings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mappings/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mappings"
+              ]
+            },
+            "description": "Every mapping across the caller's patients."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('paginated', () => pm.expect(pm.response.json()).to.have.property('results'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get doctors for a patient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mappings/{{patient_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mappings",
+                "{{patient_id}}"
+              ]
+            },
+            "description": "Note: on GET the path parameter is a PATIENT id, per the spec."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get doctors for a patient (explicit alias)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mappings/by-patient/{{patient_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mappings",
+                "by-patient",
+                "{{patient_id}}"
+              ]
+            },
+            "description": "Unambiguous equivalent of the request above."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate assignment (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mappings/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mappings"
+              ]
+            },
+            "description": "The same doctor cannot be assigned to the same patient twice.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patient\": \"{{patient_id}}\",\n  \"doctor\": \"{{doctor_id}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request rejected', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove doctor from patient",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mappings/{{mapping_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mappings",
+                "{{mapping_id}}"
+              ]
+            },
+            "description": "Note: on DELETE the path parameter is a MAPPING id, per the spec."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Cleanup and utility",
+      "item": [
+        {
+          "name": "Delete doctor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/doctors/{{doctor_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "doctors",
+                "{{doctor_id}}"
+              ]
+            },
+            "description": "Creator-only deletion."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete patient",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/patients/{{patient_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients",
+                "{{patient_id}}"
+              ]
+            },
+            "description": "Cascades to any remaining mappings."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('request succeeded', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unauthenticated request (expect 401)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/patients/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "patients"
+              ]
+            },
+            "description": "Every patient and doctor endpoint requires a token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('is 401', () => pm.response.to.have.status(401));",
+                  "pm.test('structured error', () => pm.expect(pm.response.json().error.code).to.eql('not_authenticated'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Liveness probe; no authentication required."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
