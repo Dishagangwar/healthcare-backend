@@ -146,6 +146,15 @@ REST_FRAMEWORK = {
     },
 }
 
+if DEBUG:
+    # Lets the DRF browsable API be clicked through in a browser after
+    # logging in at /admin/. Development only: production stays JWT-only,
+    # so the API has no cookie-based auth to protect against CSRF.
+    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    )
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(env("JWT_ACCESS_MINUTES", "60"))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(env("JWT_REFRESH_DAYS", "7"))),

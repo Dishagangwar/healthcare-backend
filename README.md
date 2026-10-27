@@ -39,6 +39,7 @@ hospital_management/
 │   └── exceptions.py       # Single error envelope for every failure
 ├── apps/
 │   ├── accounts/           # Custom email-based User, register/login/refresh/profile
+│   │   └── management/     # seed_demo: idempotent sample data
 │   ├── patients/           # Patient model, serializer, views
 │   ├── doctors/            # Doctor model, serializer, views
 │   └── mappings/           # PatientDoctorMapping through-model
@@ -104,7 +105,55 @@ python manage.py runserver
 
 The API is then at `http://127.0.0.1:8000/`.
 
-### 6. Tests
+### 6. Load demo data (optional)
+
+```bash
+python manage.py seed_demo
+```
+
+Creates a demo user with 4 patients, 5 doctors and 6 assignments so there is
+something to look at. It is idempotent, so running it twice changes nothing.
+
+### 7. Tests
+
+```bash
+python manage.py test tests
+```
+
+---
+
+## Checking that it works
+
+This is a JSON API, not a website, so there is no page to browse. There are four
+ways to confirm it is working, in increasing order of effort.
+
+**1. Health check** — no authentication needed:
+
+```bash
+curl http://127.0.0.1:8000/health/
+# {"success": true, "status": "healthy"}
+```
+
+**2. Django admin** — the quickest visual view of the data. Create a login, then open
+<http://127.0.0.1:8000/admin/>:
+
+```bash
+python manage.py createsuperuser
+```
+
+Patients, doctors, mappings and users are all registered there with search and filters.
+
+**3. The browsable API** — while `DJANGO_DEBUG=True`, session authentication is enabled
+alongside JWT, so after logging in at `/admin/` you can click through the API itself in
+a browser: <http://127.0.0.1:8000/api/patients/>. Each endpoint renders with its own
+forms for `POST` and `PUT`. Production stays JWT-only, so the API has no cookie-based
+authentication to protect against CSRF.
+
+**4. Postman or curl** — the real test of the API. Import `postman_collection.json` and
+run it top to bottom, or follow the curl walkthrough below.
+
+To confirm nothing is broken without any of the above, run the test suite; it exercises
+every endpoint against a real database:
 
 ```bash
 python manage.py test tests
