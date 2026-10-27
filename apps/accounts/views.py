@@ -34,7 +34,7 @@ from .serializers import (
         OpenApiExample(
             "Registration",
             value={
-                "name": "Disha Gupta",
+                "name": "Disha Gangwar",
                 "email": "disha@example.com",
                 "password": "StrongPass!234",
                 "confirm_password": "StrongPass!234",

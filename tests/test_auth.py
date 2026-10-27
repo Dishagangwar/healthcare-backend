@@ -13,7 +13,7 @@ class RegisterTests(APITestCase):
 
     def test_registers_user_and_returns_tokens(self):
         payload = {
-            "name": "Disha Gupta",
+            "name": "Disha Gangwar",
             "email": "Disha@Example.com",
             "password": DEFAULT_PASSWORD,
             "confirm_password": DEFAULT_PASSWORD,
@@ -32,7 +32,7 @@ class RegisterTests(APITestCase):
         response = self.client.post(
             self.url,
             {
-                "name": "Disha Gupta",
+                "name": "Disha Gangwar",
                 "email": "d2@example.com",
                 "password": DEFAULT_PASSWORD,
                 "confirm_password": DEFAULT_PASSWORD,
@@ -61,7 +61,7 @@ class RegisterTests(APITestCase):
         response = self.client.post(
             self.url,
             {
-                "name": "Disha Gupta",
+                "name": "Disha Gangwar",
                 "email": "mismatch@example.com",
                 "password": DEFAULT_PASSWORD,
                 "confirm_password": "SomethingElse!234",
@@ -75,7 +75,7 @@ class RegisterTests(APITestCase):
         response = self.client.post(
             self.url,
             {
-                "name": "Disha Gupta",
+                "name": "Disha Gangwar",
                 "email": "weak@example.com",
                 "password": "password",
                 "confirm_password": "password",

@@ -68,7 +68,7 @@
             "description": "Creates an account and returns the user plus a JWT pair.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Disha Gupta\",\n  \"email\": \"disha@example.com\",\n  \"password\": \"StrongPass!234\",\n  \"confirm_password\": \"StrongPass!234\"\n}"
+              "raw": "{\n  \"name\": \"Disha Gangwar\",\n  \"email\": \"disha@example.com\",\n  \"password\": \"StrongPass!234\",\n  \"confirm_password\": \"StrongPass!234\"\n}"
             }
           },
           "response": [],

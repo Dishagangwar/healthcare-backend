@@ -253,7 +253,7 @@ All endpoints require `Authorization: Bearer <token>` except register and login.
 
 ```json
 {
-  "name": "Disha Gupta",
+  "name": "Disha Gangwar",
   "email": "disha@example.com",
   "password": "StrongPass!234",
   "confirm_password": "StrongPass!234"
@@ -391,7 +391,7 @@ Assigning a doctor to a patient the caller does not own is rejected.
 # 1. Register
 curl -s -X POST http://127.0.0.1:8000/api/auth/register/ \
   -H "Content-Type: application/json" \
-  -d '{"name":"Disha Gupta","email":"disha@example.com","password":"StrongPass!234","confirm_password":"StrongPass!234"}'
+  -d '{"name":"Disha Gangwar","email":"disha@example.com","password":"StrongPass!234","confirm_password":"StrongPass!234"}'
 
 # 2. Log in and keep the access token
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login/ \
