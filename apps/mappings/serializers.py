@@ -71,3 +71,36 @@ class PatientDoctorMappingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["created_by"] = self.context["request"].user
         return super().create(validated_data)
+
+
+# ---------------------------------------------------------------------------
+# Documentation-only serializers
+#
+# PatientMappingsView assembles its response by hand, so these describe what it
+# actually returns. Nothing renders through them.
+# ---------------------------------------------------------------------------
+
+
+class PatientSummarySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+
+
+class PatientDoctorsPayloadSerializer(serializers.Serializer):
+    patient = PatientSummarySerializer()
+    count = serializers.IntegerField(help_text="Number of doctors assigned to this patient.")
+    doctors = PatientDoctorMappingSerializer(many=True)
+
+
+class PatientDoctorsResponseSerializer(serializers.Serializer):
+    """Shape of GET /api/mappings/<patient_id>/."""
+
+    success = serializers.BooleanField(default=True)
+    data = PatientDoctorsPayloadSerializer()
+
+
+class MappingDeletedSerializer(serializers.Serializer):
+    """Shape of DELETE /api/mappings/<id>/."""
+
+    success = serializers.BooleanField(default=True)
+    message = serializers.CharField(default="Doctor removed from patient successfully.")

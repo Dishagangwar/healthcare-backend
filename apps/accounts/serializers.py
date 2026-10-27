@@ -98,3 +98,37 @@ class LoginSerializer(serializers.Serializer):
     def build_tokens(user):
         refresh = RefreshToken.for_user(user)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
+
+
+# ---------------------------------------------------------------------------
+# Documentation-only serializers
+#
+# The auth views assemble their responses by hand, so drf-spectacular would
+# otherwise document the *input* serializer as the output. These describe what
+# those endpoints actually return; nothing renders through them.
+# ---------------------------------------------------------------------------
+
+
+class TokenPairSerializer(serializers.Serializer):
+    access = serializers.CharField(help_text="Send as 'Authorization: Bearer <access>'.")
+    refresh = serializers.CharField(help_text="Use at /api/auth/refresh/ for a new access token.")
+
+
+class AuthPayloadSerializer(serializers.Serializer):
+    user = UserSerializer()
+    tokens = TokenPairSerializer()
+
+
+class AuthResponseSerializer(serializers.Serializer):
+    """Shape of a successful register or login response."""
+
+    success = serializers.BooleanField(default=True)
+    message = serializers.CharField(default="Login successful.")
+    data = AuthPayloadSerializer()
+
+
+class ProfileResponseSerializer(serializers.Serializer):
+    """Shape of a successful profile response."""
+
+    success = serializers.BooleanField(default=True)
+    data = UserSerializer()

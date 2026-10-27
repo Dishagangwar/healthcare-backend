@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "django_filters",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     # Local
     "apps.accounts",
     "apps.patients",
@@ -136,6 +138,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardResultsPagination",
     "PAGE_SIZE": int(env("API_PAGE_SIZE", "20")),
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "core.schema.EnvelopeAutoSchema",
     "DEFAULT_THROTTLE_CLASSES": (
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
@@ -144,6 +147,48 @@ REST_FRAMEWORK = {
         "anon": env("THROTTLE_ANON", "30/min"),
         "user": env("THROTTLE_USER", "120/min"),
     },
+}
+
+# --------------------------------------------------------------------------
+# OpenAPI schema / interactive docs
+# --------------------------------------------------------------------------
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Healthcare Backend API",
+    "DESCRIPTION": (
+        "REST API for managing patient and doctor records.\n\n"
+        "**Authentication.** Call `/api/auth/register/` or `/api/auth/login/` to get a "
+        "token pair, then send `Authorization: Bearer <access_token>`. In Swagger UI, "
+        "paste the access token into **Authorize** to try the secured endpoints.\n\n"
+        "**Responses.** Success is `{\"success\": true, \"data\": ...}`; a paginated "
+        "list replaces `data` with `results` plus page counters. Errors are "
+        "`{\"success\": false, \"error\": {\"code\", \"message\", \"details\"}}`, where "
+        "`code` is stable enough to branch on and `details` maps field names to their "
+        "errors.\n\n"
+        "**Ownership.** Patients are visible only to the user who created them, so "
+        "another user's id returns `404` rather than `403`. The doctor directory is "
+        "readable by any authenticated user but writable only by whoever added the "
+        "record."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Serve the UI assets from the sidecar package rather than a CDN, so the
+    # docs work offline and pin to a known version.
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+        "displayRequestDuration": True,
+        "filter": True,
+    },
+    "TAGS": [
+        {"name": "auth", "description": "Registration, login and token refresh."},
+        {"name": "patients", "description": "Patient records, private to their creator."},
+        {"name": "doctors", "description": "Shared doctor directory."},
+        {"name": "mappings", "description": "Assignment of doctors to patients."},
+    ],
 }
 
 if DEBUG:

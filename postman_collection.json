@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Healthcare Backend API",
-    "description": "Django + DRF + PostgreSQL healthcare backend.\n\nRun the requests top to bottom: Register and Login store the JWT and the created ids in collection variables, so nothing needs to be copied by hand.\n\nSet `base_url` if the server is not on http://127.0.0.1:8000.",
+    "description": "Django + DRF + PostgreSQL healthcare backend.\n\nRun the requests top to bottom: Register and Login store the JWT and the created ids in collection variables, so nothing needs to be copied by hand.\n\nSet `base_url` if the server is not on http://127.0.0.1:8000.\n\nInteractive docs are also served by the app itself at /api/docs/ (Swagger UI) and /api/redoc/, generated from the code.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -1112,6 +1112,72 @@
               ]
             },
             "description": "Liveness probe; no authentication required."
+          },
+          "response": []
+        },
+        {
+          "name": "OpenAPI schema",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/schema/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "schema"
+              ]
+            },
+            "description": "The generated OpenAPI 3 document."
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger UI",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/docs/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "docs"
+              ]
+            },
+            "description": "Interactive docs; open this URL in a browser."
+          },
+          "response": []
+        },
+        {
+          "name": "ReDoc",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/redoc/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "redoc"
+              ]
+            },
+            "description": "Read-only API reference; open in a browser."
           },
           "response": []
         }

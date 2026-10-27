@@ -4,3 +4,5 @@ djangorestframework-simplejwt==5.3.1
 psycopg2-binary==2.9.9
 python-dotenv==1.0.1
 django-filter==24.3
+drf-spectacular==0.30.0
+drf-spectacular-sidecar==2026.10.1

@@ -19,6 +19,7 @@ for reading, but only the user who added a doctor may change or remove that reco
 | psycopg2-binary | 2.9.9 | PostgreSQL driver |
 | python-dotenv | 1.0.1 | Loads `.env` in development |
 | django-filter | 24.3 | Query-string filtering on list endpoints |
+| drf-spectacular | 0.30.0 | OpenAPI 3 schema and interactive docs, generated from the code |
 
 ---
 
@@ -35,6 +36,7 @@ hospital_management/
 │   ├── pagination.py       # Page-number pagination with bounded page_size
 │   ├── permissions.py      # IsOwner object-level permission
 │   ├── validators.py       # Shared phone-number format rule
+│   ├── schema.py           # OpenAPI generation aware of the response envelopes
 │   ├── fields.py           # PhoneNumberField: normalises before validating
 │   └── exceptions.py       # Single error envelope for every failure
 ├── apps/
@@ -43,7 +45,7 @@ hospital_management/
 │   ├── patients/           # Patient model, serializer, views
 │   ├── doctors/            # Doctor model, serializer, views
 │   └── mappings/           # PatientDoctorMapping through-model
-├── tests/                  # 68 API tests covering every endpoint
+├── tests/                  # 82 API tests covering every endpoint
 ├── postman_collection.json # Importable request collection
 ├── .env.example            # Template for required environment variables
 └── requirements.txt
@@ -127,14 +129,26 @@ python manage.py test tests
 This is a JSON API, not a website, so there is no page to browse. There are four
 ways to confirm it is working, in increasing order of effort.
 
-**1. Health check** — no authentication needed:
+**1. Interactive API docs** — the fastest way to see every endpoint and try it:
+
+| URL | What it is |
+|---|---|
+| <http://127.0.0.1:8000/api/docs/> | Swagger UI — browse and execute requests |
+| <http://127.0.0.1:8000/api/redoc/> | ReDoc — a cleaner read-only reference |
+| <http://127.0.0.1:8000/api/schema/> | The raw OpenAPI 3 document (YAML) |
+
+Log in through **Authorize**: call `POST /api/auth/login/` from the page, copy the
+`access` token out of the response, and paste it in. Every secured endpoint is then
+executable straight from the browser.
+
+**2. Health check** — no authentication needed:
 
 ```bash
 curl http://127.0.0.1:8000/health/
 # {"success": true, "status": "healthy"}
 ```
 
-**2. Django admin** — the quickest visual view of the data. Create a login, then open
+**3. Django admin** — the quickest visual view of the data. Create a login, then open
 <http://127.0.0.1:8000/admin/>:
 
 ```bash
@@ -143,13 +157,13 @@ python manage.py createsuperuser
 
 Patients, doctors, mappings and users are all registered there with search and filters.
 
-**3. The browsable API** — while `DJANGO_DEBUG=True`, session authentication is enabled
+**4. The browsable API** — while `DJANGO_DEBUG=True`, session authentication is enabled
 alongside JWT, so after logging in at `/admin/` you can click through the API itself in
 a browser: <http://127.0.0.1:8000/api/patients/>. Each endpoint renders with its own
 forms for `POST` and `PUT`. Production stays JWT-only, so the API has no cookie-based
 authentication to protect against CSRF.
 
-**4. Postman or curl** — the real test of the API. Import `postman_collection.json` and
+**5. Postman or curl** — the real test of the API. Import `postman_collection.json` and
 run it top to bottom, or follow the curl walkthrough below.
 
 To confirm nothing is broken without any of the above, run the test suite; it exercises
@@ -364,6 +378,9 @@ Assigning a doctor to a patient the caller does not own is rejected.
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/health/` | Liveness probe; no authentication |
+| GET | `/api/docs/` | Swagger UI (interactive) |
+| GET | `/api/redoc/` | ReDoc reference |
+| GET | `/api/schema/` | OpenAPI 3 document |
 | — | `/admin/` | Django admin |
 
 ---
@@ -409,6 +426,27 @@ authenticate without any copy-pasting. Run the requests top to bottom.
 
 ---
 
+## How the docs stay accurate
+
+The schema is generated from the code, so it cannot drift from the routes or
+serializers. Two things need help, though, and both live in `core/schema.py`:
+
+- **The response envelope.** Views render through `StandardResponseMixin`, so the
+  real body is `{"success": true, "data": ...}` rather than the bare serializer a
+  generator would assume. `EnvelopeAutoSchema` applies that envelope during
+  generation, and the matching error envelopes with it, instead of each view being
+  annotated by hand.
+- **The exceptions to it.** A paginated list carries its own envelope from
+  `StandardResultsPagination.get_paginated_response_schema`, so it must not be
+  wrapped twice. Views that build a response themselves — register, login, the
+  per-patient doctor list — declare an explicit response serializer. SimpleJWT's
+  token refresh is the one endpoint that answers without an envelope at all, so
+  only views that actually use the mixin get wrapped.
+
+`tests/test_schema.py` pins each of those cases, and the suite fails if
+drf-spectacular emits a single warning, which is what it does when an endpoint is
+being documented by guesswork.
+
 ## Security notes
 
 - Secrets and database credentials come from the environment, never from source.
@@ -440,12 +478,13 @@ Deleting a patient or a doctor cascades to their mappings, leaving no orphans.
 
 ## Testing
 
-68 tests in `tests/` cover every endpoint, run against a real PostgreSQL database:
+82 tests in `tests/` cover every endpoint, run against a real PostgreSQL database:
 registration and login (including duplicate email, weak password, mismatched
 confirmation and account enumeration), token refresh and rejection of invalid tokens,
 full CRUD on patients and doctors, cross-user isolation, every validation rule, the
 uniqueness constraints, phone-number normalisation, filtering, search, ordering, and
-the mapping routes including cascade deletes.
+the mapping routes including cascade deletes. A further 14 check that the published
+OpenAPI schema matches what the endpoints really return.
 
 ```bash
 python manage.py test tests

@@ -24,3 +24,32 @@ class StandardResultsPagination(PageNumberPagination):
                 ]
             )
         )
+
+    def get_paginated_response_schema(self, schema):
+        """Describe the shape `get_paginated_response` actually returns.
+
+        The inherited version documents DRF's default envelope, which would
+        leave `success`, `total_pages` and `current_page` out of the OpenAPI
+        schema. Any change above belongs here too.
+        """
+        page_query = self.page_query_param
+        return {
+            "type": "object",
+            "required": ["success", "count", "total_pages", "current_page", "results"],
+            "properties": {
+                "success": {"type": "boolean", "example": True},
+                "count": {"type": "integer", "example": 42,
+                          "description": "Total rows across all pages."},
+                "total_pages": {"type": "integer", "example": 3},
+                "current_page": {"type": "integer", "example": 1},
+                "next": {
+                    "type": "string", "nullable": True, "format": "uri",
+                    "example": f"http://api.example.org/accounts/?{page_query}=4",
+                },
+                "previous": {
+                    "type": "string", "nullable": True, "format": "uri",
+                    "example": f"http://api.example.org/accounts/?{page_query}=2",
+                },
+                "results": schema,
+            },
+        }
