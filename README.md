@@ -23,32 +23,24 @@ Deployed on Vercel against a Neon PostgreSQL database; see
 
 ### Sign in and try it
 
-The front page offers two ways in. **[Create an account](https://healthcarebackend-woad.vercel.app/register/)**
-and you get a workspace of your own: the patients and assignments you add are
-visible only to you, and you can delete them. The doctor directory is shared for
-reading, so the entries already on file can be assigned straight away — the same
-ownership rules the API enforces.
+**[Create an account](https://healthcarebackend-woad.vercel.app/register/)** —
+an email and a password is all it takes, and you land in a workspace of your own.
+The patients and assignments you add are visible only to you, and you can delete
+them. The doctor directory is shared for reading, so the entries already on file
+can be assigned straight away: the same ownership rules the API enforces.
 
-Or use the shared demo account, which already holds sample data:
+That account works in both places:
 
-| | |
-|---|---|
-| Email | `demo@example.com` |
-| Password | `healthcare-demo-2026` |
+- **[Admin](https://healthcarebackend-woad.vercel.app/admin/)** — add and edit
+  patients, doctors and assignments through the browser.
+- **[Swagger UI](https://healthcarebackend-woad.vercel.app/api/docs/)** — send
+  your email and password to `POST /api/auth/login/`, paste the returned `access`
+  token into **Authorize**, and every endpoint becomes callable from the page.
+  You can also register there, with `POST /api/auth/register/`.
 
-Those credentials work in both places:
-
-- **[Admin](https://healthcarebackend-woad.vercel.app/admin/)** — browse and edit
-  the seeded patients, doctors and assignments.
-- **[Swagger UI](https://healthcarebackend-woad.vercel.app/api/docs/)** — send them
-  to `POST /api/auth/login/`, paste the returned `access` token into
-  **Authorize**, and every endpoint becomes callable from the page.
-
-The demo account owns the seeded records, so the API answers with data instead
-of an empty list. Neither it nor a registered account is a superuser: neither can
-see or create user accounts. The demo account additionally cannot delete, since
-its records are shared with every other visitor —
-`python manage.py seed_demo` restores them if someone leaves a mess.
+No account created this way is a superuser: none can see or create user accounts,
+or reach another account's records. There are deliberately no shared credentials
+published here — a password in a public README is one everybody edits through.
 
 ---
 
@@ -169,16 +161,16 @@ python manage.py seed_demo
 Creates a demo user with 4 patients, 5 doctors and 6 assignments so there is
 something to look at. It is idempotent, so running it twice changes nothing.
 
-Add `--password` to make that account one you can actually sign in as, which is
-how the [public demo](#sign-in-and-try-it) is set up:
+Add `--password` to make that account one you can sign in as, which is handy
+for poking at the admin locally without creating a superuser:
 
 ```bash
 python manage.py seed_demo --password 'choose-something'
 ```
 
 It then gains staff access to patients, doctors and mappings only — never the
-user table, since a password meant to be published should not be able to create
-accounts.
+user table. Keep such a password to your own machine; the deployed site asks
+visitors to register instead.
 
 ### 7. Tests
 
