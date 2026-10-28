@@ -6,6 +6,20 @@ Framework and PostgreSQL, secured with JWT authentication.
 Each user sees only the patient records they created. The doctor directory is shared
 for reading, but only the user who added a doctor may change or remove that record.
 
+## Live
+
+<https://healthcarebackend-woad.vercel.app>
+
+| | |
+|---|---|
+| Interactive docs | [`/api/docs/`](https://healthcarebackend-woad.vercel.app/api/docs/) |
+| OpenAPI schema | [`/api/schema/`](https://healthcarebackend-woad.vercel.app/api/schema/) |
+| Admin | [`/admin/`](https://healthcarebackend-woad.vercel.app/admin/) — the bare domain redirects here |
+| Health check | [`/health/`](https://healthcarebackend-woad.vercel.app/health/) |
+
+Deployed on Vercel against a Neon PostgreSQL database; see
+[Deploying to Vercel](#deploying-to-vercel) for how it is wired up.
+
 ---
 
 ## Stack
@@ -19,6 +33,8 @@ for reading, but only the user who added a doctor may change or remove that reco
 | psycopg2-binary | 2.9.9 | PostgreSQL driver |
 | python-dotenv | 1.0.1 | Loads `.env` in development |
 | django-filter | 24.3 | Query-string filtering on list endpoints |
+| dj-database-url | 2.3.0 | Parses the single `DATABASE_URL` hosted providers hand out |
+| whitenoise | 6.8.2 | Serves admin and docs assets without a separate web server |
 | drf-spectacular | 0.30.0 | OpenAPI 3 schema and interactive docs, generated from the code |
 
 ---
@@ -263,11 +279,11 @@ Repeat the `migrate` line whenever a deploy adds a migration.
 ### 5. Confirm it is up
 
 ```bash
-curl https://your-app.vercel.app/health/
+curl https://healthcarebackend-woad.vercel.app/health/
 # {"success": true, "status": "healthy"}
 ```
 
-Then open `https://your-app.vercel.app/api/docs/` for the Swagger UI. If a
+Then open `https://healthcarebackend-woad.vercel.app/api/docs/` for the Swagger UI. If a
 request fails, `vercel logs <deployment-url>` shows the traceback: the logging
 config writes to the console, which is where Vercel collects it.
 
