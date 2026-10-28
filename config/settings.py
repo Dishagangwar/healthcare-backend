@@ -128,6 +128,14 @@ if DATABASE_URL:
             ssl_require=env_bool("POSTGRES_SSL_REQUIRE", True),
         )
     }
+    # Serverless platforms kill a request that runs too long, and a
+    # database that suspends when idle can take seconds to wake. Fail
+    # with a readable error instead of hanging until the platform cuts
+    # the connection and the browser reports nothing at all.
+    DATABASES["default"].setdefault("OPTIONS", {})
+    DATABASES["default"]["OPTIONS"].setdefault(
+        "connect_timeout", int(env("POSTGRES_CONNECT_TIMEOUT", "15"))
+    )
 else:
     DATABASES = {
         "default": {

@@ -6,6 +6,7 @@ somewhere they can actually use.
 """
 
 from django.contrib.auth import login
+from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import FormView, TemplateView
@@ -30,7 +31,16 @@ class RegisterPageView(FormView):
             return redirect(self.success_url)
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def form_valid(self, form):
+        """Create the account, grant it access and sign it in, or do none.
+
+        Signing up is four writes across three tables. Without this, a
+        request that dies partway -- a serverless timeout, a dropped
+        database connection -- leaves an account that was created but
+        never granted access or logged in, and whose email now collides
+        with the visitor's next attempt.
+        """
         user = form.save()
         # Their own records only, so deleting them harms nobody else.
         grant_workspace_access(user, allow_delete=True)

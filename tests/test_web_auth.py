@@ -4,6 +4,8 @@ Registration is open to anyone, so the interesting assertions are about
 what a fresh account *cannot* reach.
 """
 
+from unittest import mock
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -68,6 +70,16 @@ class RegistrationTests(TestCase):
         user = User.objects.get(email="visitor@example.com")
         self.assertFalse(user.has_perm("accounts.view_user"))
         self.assertFalse(user.has_perm("accounts.add_user"))
+
+    def test_a_failure_part_way_leaves_no_account(self):
+        """Otherwise the visitor's email collides with their own retry."""
+        with mock.patch(
+            "apps.accounts.web.grant_workspace_access",
+            side_effect=RuntimeError("database went away"),
+        ):
+            with self.assertRaises(RuntimeError):
+                self.client.post("/register/", SIGNUP)
+        self.assertFalse(User.objects.filter(email=SIGNUP["email"]).exists())
 
     def test_email_must_be_unique(self):
         make_user(email="visitor@example.com")
