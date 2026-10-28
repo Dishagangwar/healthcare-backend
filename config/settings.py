@@ -8,6 +8,7 @@ production the same names are expected as real environment variables.
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 import os
 
@@ -40,6 +41,23 @@ def env_list(name, default=""):
 SECRET_KEY = env("DJANGO_SECRET_KEY", required=True)
 DEBUG = env_bool("DJANGO_DEBUG", False)
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
+CSRF_TRUSTED_ORIGINS = [
+    origin if "://" in origin else f"https://{origin}"
+    for origin in env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+]
+
+# Vercel gives every deployment its own hostname, so the host cannot be
+# hard-coded: VERCEL_URL is the current deployment, VERCEL_PROJECT_PRODUCTION_URL
+# the stable production domain, and the wildcard covers preview deployments.
+ON_VERCEL = bool(env("VERCEL"))
+
+if ON_VERCEL:
+    ALLOWED_HOSTS.append(".vercel.app")
+    CSRF_TRUSTED_ORIGINS.append("https://*.vercel.app")
+    for _host in (env("VERCEL_URL"), env("VERCEL_PROJECT_PRODUCTION_URL")):
+        if _host:
+            ALLOWED_HOSTS.append(_host)
+            CSRF_TRUSTED_ORIGINS.append(f"https://{_host}")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -63,6 +81,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -94,17 +113,33 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------------------------------------------------------------
 # Database (PostgreSQL)
 # --------------------------------------------------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("POSTGRES_DB", required=True),
-        "USER": env("POSTGRES_USER", required=True),
-        "PASSWORD": env("POSTGRES_PASSWORD", ""),
-        "HOST": env("POSTGRES_HOST", "localhost"),
-        "PORT": env("POSTGRES_PORT", "5432"),
-        "CONN_MAX_AGE": int(env("POSTGRES_CONN_MAX_AGE", "60")),
+# Hosted providers (Neon, Supabase, RDS) hand out a single connection URL,
+# so DATABASE_URL wins when it is set; the discrete POSTGRES_* names stay
+# for local development. Serverless platforms run many short-lived
+# processes, so persistent connections there exhaust the server's limit:
+# CONN_MAX_AGE defaults to 0 for a URL-configured database.
+DATABASE_URL = env("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=int(env("POSTGRES_CONN_MAX_AGE", "0")),
+            ssl_require=env_bool("POSTGRES_SSL_REQUIRE", True),
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("POSTGRES_DB", required=True),
+            "USER": env("POSTGRES_USER", required=True),
+            "PASSWORD": env("POSTGRES_PASSWORD", ""),
+            "HOST": env("POSTGRES_HOST", "localhost"),
+            "PORT": env("POSTGRES_PORT", "5432"),
+            "CONN_MAX_AGE": int(env("POSTGRES_CONN_MAX_AGE", "60")),
+        }
+    }
 
 # --------------------------------------------------------------------------
 # Authentication
@@ -224,6 +259,14 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# WhiteNoise serves the admin and Swagger UI assets out of the application
+# itself, which is what lets the project run on a platform with no separate
+# web server in front of it. Such a platform also has a read-only
+# filesystem and nowhere to collect into, so there WhiteNoise reads through
+# the staticfiles finders instead of STATIC_ROOT.
+WHITENOISE_USE_FINDERS = env_bool("WHITENOISE_USE_FINDERS", ON_VERCEL)
+WHITENOISE_AUTOREFRESH = DEBUG
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
