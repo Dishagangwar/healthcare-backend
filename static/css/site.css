@@ -11,6 +11,11 @@
     --brand-soft: #ecfdf5;
     --brand-ink: #ffffff;
 
+    /* The masthead needs its own pair. In dark mode the brand colour is
+       a light mint, which white text cannot sit on. */
+    --masthead-bg: #134e4a;
+    --masthead-fg: #ffffff;
+
     --bg: #f7f9f9;
     --surface: #ffffff;
     --ink: #1f2328;
@@ -30,6 +35,9 @@
         --brand-strong: #5eead4;
         --brand-soft: #0f2522;
         --brand-ink: #06201c;
+
+        --masthead-bg: #0c1f1d;
+        --masthead-fg: #e9f7f4;
 
         --bg: #0f1112;
         --surface: #17191b;
@@ -63,12 +71,13 @@ a { color: var(--brand); }
 /* --- masthead ------------------------------------------------------- */
 
 .masthead {
-    background: var(--brand-strong);
-    color: #fff;
+    background: var(--masthead-bg);
+    color: var(--masthead-fg);
     padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
 }
 .masthead .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.masthead a { color: #fff; text-decoration: none; }
+.masthead a { color: var(--masthead-fg); text-decoration: none; }
 .masthead .mark { font-weight: 650; letter-spacing: -.01em; }
 .masthead nav { display: flex; gap: 18px; font-size: .9rem; }
 .masthead nav a { opacity: .85; }
