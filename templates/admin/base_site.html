@@ -13,3 +13,10 @@
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
+
+{% block footer %}{{ block.super }}
+  {% url 'admin:login' as login_url %}
+  {% if request.path == login_url %}
+    <p class="signup-prompt">New here? <a href="{% url 'register' %}">Create an account</a></p>
+  {% endif %}
+{% endblock %}

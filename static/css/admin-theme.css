@@ -196,7 +196,17 @@ input[type=email]:focus, textarea:focus, select:focus {
     border-radius: 7px;
 }
 
-/* The login card, which the sign-up page reuses. */
+/* Otherwise arriving at the login page without an account is a dead end:
+   the only other way in is a URL nothing on this page mentions. */
+.signup-prompt {
+    margin: 0;
+    padding: 14px 16px 18px;
+    text-align: center;
+    font-size: .875rem;
+    color: var(--body-quiet-color);
+    border-top: 1px solid var(--hairline-color);
+}
+
 .login #container {
     border-radius: 12px;
     overflow: hidden;

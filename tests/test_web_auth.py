@@ -34,6 +34,10 @@ class LandingPageTests(TestCase):
 
 
 class RegistrationTests(TestCase):
+    def test_login_page_offers_sign_up(self):
+        """Arriving without an account should not be a dead end."""
+        self.assertContains(self.client.get("/admin/login/"), "/register/")
+
     def test_form_renders(self):
         response = self.client.get("/register/")
         self.assertEqual(response.status_code, 200)
