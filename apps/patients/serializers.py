@@ -66,6 +66,6 @@ class PatientSerializer(serializers.ModelSerializer):
         return value.lower().strip()
 
     def create(self, validated_data):
-        # Ownership comes from the token, never from the request body.
+       
         validated_data["created_by"] = self.context["request"].user
         return super().create(validated_data)

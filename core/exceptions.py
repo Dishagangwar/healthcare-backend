@@ -9,7 +9,6 @@ from rest_framework.views import exception_handler as drf_exception_handler
 
 logger = logging.getLogger(__name__)
 
-# Maps an exception class to the stable `code` string clients can branch on.
 ERROR_CODES = {
     exceptions.ParseError: "parse_error",
     exceptions.AuthenticationFailed: "authentication_failed",

@@ -4,10 +4,7 @@ from django.contrib.auth.models import Group
 
 from .models import User
 
-# Groups are a Django built-in this project does not use: access is decided by
-# record ownership, not by group membership. Unregistering keeps the admin to
-# what the system actually models. The model itself still exists, since
-# PermissionsMixin depends on it.
+
 admin.site.unregister(Group)
 
 

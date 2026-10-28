@@ -9,7 +9,7 @@ from .models import PatientDoctorMapping
 
 
 class PatientDoctorMappingSerializer(serializers.ModelSerializer):
-    # Writable ids in, readable nested objects out.
+   
     patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
     doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())
     patient_name = serializers.CharField(source="patient.full_name", read_only=True)
@@ -29,8 +29,7 @@ class PatientDoctorMappingSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-        # Declared explicitly so the duplicate message is phrased for the
-        # client; an explicit list also replaces DRF's generated validators.
+      
         validators = [
             UniqueTogetherValidator(
                 queryset=PatientDoctorMapping.objects.all(),
@@ -51,8 +50,7 @@ class PatientDoctorMappingSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         patient = attrs.get("patient") or getattr(self.instance, "patient", None)
 
-        # Mirrors the DB constraint, so the client gets a field error instead
-        # of a 409 from the database.
+        
         if attrs.get("is_primary"):
             existing_primary = PatientDoctorMapping.objects.filter(
                 patient=patient, is_primary=True
@@ -73,12 +71,6 @@ class PatientDoctorMappingSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-# ---------------------------------------------------------------------------
-# Documentation-only serializers
-#
-# PatientMappingsView assembles its response by hand, so these describe what it
-# actually returns. Nothing renders through them.
-# ---------------------------------------------------------------------------
 
 
 class PatientSummarySerializer(serializers.Serializer):
