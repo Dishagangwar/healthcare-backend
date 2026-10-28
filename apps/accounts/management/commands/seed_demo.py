@@ -8,8 +8,10 @@ from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 
 from apps.doctors.models import Doctor
 from apps.mappings.models import PatientDoctorMapping
@@ -18,6 +20,19 @@ from apps.patients.models import Patient
 User = get_user_model()
 
 DEMO_EMAIL = "demo@example.com"
+
+# What the demo account may touch in the admin once it has a password.
+# The user model is deliberately absent: a password published in the README
+# must not be able to create accounts or change anyone else's.
+DEMO_MODELS = [
+    ("patients", "patient"),
+    ("doctors", "doctor"),
+    ("mappings", "patientdoctormapping"),
+]
+
+# No "delete": a visitor should be able to exercise the app without being
+# able to empty it for the next one.
+DEMO_ACTIONS = ("add", "change", "view")
 
 DOCTORS = [
     ("Rohan Kapoor", Doctor.Specialization.CARDIOLOGY, "MCI-10045",
@@ -67,14 +82,48 @@ class Command(BaseCommand):
             default=DEMO_EMAIL,
             help=f"Owner of the demo records (default: {DEMO_EMAIL}).",
         )
+        parser.add_argument(
+            "--password",
+            help=(
+                "Give the demo account this password plus admin access to "
+                "patients, doctors and mappings, so a visitor can sign in "
+                "and try the app. Omitted, the account keeps an unusable "
+                "password and is only something to own the records."
+            ),
+        )
+
+    def grant_demo_permissions(self, user):
+        """Replace the account's permissions with exactly the demo set.
+
+        Assigned rather than added to, so narrowing DEMO_MODELS or
+        DEMO_ACTIONS and re-running actually takes the extra rights away.
+        """
+        query = Q()
+        for app_label, model in DEMO_MODELS:
+            query |= Q(
+                content_type__app_label=app_label,
+                content_type__model=model,
+                codename__in=[f"{action}_{model}" for action in DEMO_ACTIONS],
+            )
+        user.user_permissions.set(Permission.objects.filter(query))
 
     @transaction.atomic
     def handle(self, *args, **options):
         email = options["email"].lower()
+        password = options["password"]
         owner, created = User.objects.get_or_create(
             email=email, defaults={"name": "Demo User"}
         )
-        if created:
+        if password:
+            owner.set_password(password)
+            owner.is_staff = True
+            owner.save()
+            self.grant_demo_permissions(owner)
+            self.stdout.write(
+                f"{'Created' if created else 'Updated'} demo user {email} "
+                "with a password and admin access to the demo tables"
+            )
+        elif created:
             # Unusable password: this account is for viewing data in the
             # admin, not for logging in as.
             owner.set_unusable_password()

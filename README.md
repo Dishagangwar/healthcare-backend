@@ -20,6 +20,27 @@ for reading, but only the user who added a doctor may change or remove that reco
 Deployed on Vercel against a Neon PostgreSQL database; see
 [Deploying to Vercel](#deploying-to-vercel) for how it is wired up.
 
+### Sign in and try it
+
+| | |
+|---|---|
+| Email | `demo@example.com` |
+| Password | `healthcare-demo-2026` |
+
+Those credentials work in both places:
+
+- **[Admin](https://healthcarebackend-woad.vercel.app/admin/)** — browse and edit
+  the seeded patients, doctors and assignments.
+- **[Swagger UI](https://healthcarebackend-woad.vercel.app/api/docs/)** — send them
+  to `POST /api/auth/login/`, paste the returned `access` token into
+  **Authorize**, and every endpoint becomes callable from the page.
+
+The account owns the seeded records, so the API answers with data instead of an
+empty list. It is deliberately not a superuser: it can add and edit patients,
+doctors and assignments, but cannot delete them, and cannot see or create user
+accounts. `python manage.py seed_demo` restores the sample data if a visitor
+leaves it in a mess.
+
 ---
 
 ## Stack
@@ -134,6 +155,17 @@ python manage.py seed_demo
 
 Creates a demo user with 4 patients, 5 doctors and 6 assignments so there is
 something to look at. It is idempotent, so running it twice changes nothing.
+
+Add `--password` to make that account one you can actually sign in as, which is
+how the [public demo](#sign-in-and-try-it) is set up:
+
+```bash
+python manage.py seed_demo --password 'choose-something'
+```
+
+It then gains staff access to patients, doctors and mappings only — never the
+user table, since a password meant to be published should not be able to create
+accounts.
 
 ### 7. Tests
 
