@@ -243,6 +243,18 @@ if DEBUG:
         "rest_framework.authentication.SessionAuthentication",
     )
 
+# --------------------------------------------------------------------------
+# Messages
+# --------------------------------------------------------------------------
+# Django's default FallbackStorage puts each flash message in its own
+# cookie. Every response that sets one -- saving a record in the admin,
+# say -- therefore carries a third Set-Cookie beside the session and CSRF
+# pair, and on this deployment those are exactly the responses that never
+# reach the browser: the row is written, the redirect is lost. Requests
+# that set no message (sign-up, login, logout) have always worked.
+# Keeping messages in the session keeps the header count at two.
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(env("JWT_ACCESS_MINUTES", "60"))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(env("JWT_REFRESH_DAYS", "7"))),
