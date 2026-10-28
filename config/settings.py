@@ -259,6 +259,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # WhiteNoise serves the admin and Swagger UI assets out of the application
 # itself, which is what lets the project run on a platform with no separate

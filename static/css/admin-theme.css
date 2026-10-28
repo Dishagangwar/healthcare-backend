@@ -1,0 +1,208 @@
+/*
+    Brand for the Django admin.
+
+    Loaded from {% block extrastyle %}, which base.html renders after its
+    own base.css and dark_mode.css, so these redefinitions win. The
+    selectors mirror Django's: html[data-theme="light"] for an explicit
+    light choice, :root inside the dark media query for "auto", and
+    html[data-theme="dark"] for an explicit dark one. Almost everything
+    here is a variable, so the admin's own layout rules keep working.
+*/
+
+html[data-theme="light"],
+:root {
+    --primary: #0f766e;
+    --primary-fg: #ffffff;
+    --secondary: #134e4a;
+    --accent: #ccfbf1;
+
+    --body-fg: #1f2328;
+    --body-bg: #ffffff;
+    --body-quiet-color: #5b6470;
+    --body-loud-color: #0b0d0e;
+
+    --header-color: #a7f3e4;
+    --header-branding-color: #ffffff;
+    --header-bg: #134e4a;
+    --header-link-color: #ffffff;
+
+    --breadcrumbs-fg: #0f766e;
+    --breadcrumbs-link-fg: #134e4a;
+    --breadcrumbs-bg: #ecfdf5;
+
+    --link-fg: #0f766e;
+    --link-hover-color: #134e4a;
+    --link-selected-fg: #0d9488;
+
+    --hairline-color: #e6e8eb;
+    --border-color: #d7dbdf;
+
+    --button-bg: #0f766e;
+    --button-fg: #ffffff;
+    --button-hover-bg: #115e59;
+    --default-button-bg: #0d9488;
+    --default-button-hover-bg: #0f766e;
+    --close-button-bg: #6b7280;
+    --close-button-hover-bg: #4b5563;
+
+    --object-tools-bg: #134e4a;
+    --object-tools-hover-bg: #0f766e;
+
+    --selected-row: #ecfdf5;
+    --selected-bg: #f0fdfa;
+    --darkened-bg: #f6f8f9;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary: #14b8a6;
+        --primary-fg: #06201c;
+        --secondary: #0f2e2a;
+        --accent: #0f766e;
+
+        --body-fg: #e6e8ea;
+        --body-bg: #121415;
+        --body-quiet-color: #a8b0b8;
+        --body-loud-color: #ffffff;
+
+        --header-color: #99f6e4;
+        --header-branding-color: #f0fdfa;
+        --header-bg: #0c1f1d;
+        --header-link-color: #f0fdfa;
+
+        --breadcrumbs-fg: #5eead4;
+        --breadcrumbs-link-fg: #ccfbf1;
+        --breadcrumbs-bg: #0f2e2a;
+
+        --link-fg: #5eead4;
+        --link-hover-color: #99f6e4;
+        --link-selected-fg: #2dd4bf;
+
+        --hairline-color: #23282b;
+        --border-color: #2e3538;
+
+        --button-bg: #0d9488;
+        --button-fg: #06201c;
+        --button-hover-bg: #14b8a6;
+        --default-button-bg: #14b8a6;
+        --default-button-hover-bg: #2dd4bf;
+
+        --object-tools-bg: #0f766e;
+        --object-tools-hover-bg: #14b8a6;
+
+        --selected-row: #11302c;
+        --selected-bg: #0f2522;
+        --darkened-bg: #1a1d1e;
+    }
+}
+
+html[data-theme="dark"] {
+    --primary: #14b8a6;
+    --primary-fg: #06201c;
+    --secondary: #0f2e2a;
+    --accent: #0f766e;
+
+    --body-fg: #e6e8ea;
+    --body-bg: #121415;
+    --body-quiet-color: #a8b0b8;
+    --body-loud-color: #ffffff;
+
+    --header-color: #99f6e4;
+    --header-branding-color: #f0fdfa;
+    --header-bg: #0c1f1d;
+    --header-link-color: #f0fdfa;
+
+    --breadcrumbs-fg: #5eead4;
+    --breadcrumbs-link-fg: #ccfbf1;
+    --breadcrumbs-bg: #0f2e2a;
+
+    --link-fg: #5eead4;
+    --link-hover-color: #99f6e4;
+    --link-selected-fg: #2dd4bf;
+
+    --hairline-color: #23282b;
+    --border-color: #2e3538;
+
+    --button-bg: #0d9488;
+    --button-fg: #06201c;
+    --button-hover-bg: #14b8a6;
+    --default-button-bg: #14b8a6;
+    --default-button-hover-bg: #2dd4bf;
+
+    --object-tools-bg: #0f766e;
+    --object-tools-hover-bg: #14b8a6;
+
+    --selected-row: #11302c;
+    --selected-bg: #0f2522;
+    --darkened-bg: #1a1d1e;
+}
+
+/* --- A few structural touches the variables cannot reach ------------- */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+}
+
+#branding h1,
+#site-name a {
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
+/* Softer cards, so the index and change forms read as panels rather
+   than boxes ruled off from each other. */
+.module,
+.dashboard .module,
+#changelist,
+#content-related .module {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.module caption,
+.inline-group h2 {
+    letter-spacing: 0.02em;
+}
+
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+    border-radius: 7px;
+    padding: 8px 15px;
+}
+
+input[type=text], input[type=password], input[type=email],
+input[type=url], input[type=number], input[type=tel],
+textarea, select, .vTextField {
+    border-radius: 7px;
+    border: 1px solid var(--border-color);
+    padding: 7px 9px;
+}
+
+input[type=text]:focus, input[type=password]:focus,
+input[type=email]:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+#changelist-filter {
+    border-radius: 10px;
+}
+
+.object-tools a {
+    border-radius: 7px;
+}
+
+/* The login card, which the sign-up page reuses. */
+.login #container {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.login #header {
+    border-radius: 0;
+}

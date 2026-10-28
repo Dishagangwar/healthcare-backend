@@ -1,32 +1,50 @@
-{% extends "admin/base_site.html" %}
-
-{% block breadcrumbs %}
-  <div class="breadcrumbs"><a href="{% url 'landing' %}">Home</a> &rsaquo; Create an account</div>
-{% endblock %}
-
-{% block content %}
-<div id="content-main">
-  <p>Your own workspace: the patients and assignments you add are visible only
-  to you. The doctor directory is shared for reading.</p>
-
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <fieldset class="module aligned">
-      {% for field in form %}
-        <div class="form-row{% if field.errors %} errors{% endif %}">
-          {{ field.errors }}
-          {{ field.label_tag }}
-          {{ field }}
-          {% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}
-        </div>
-      {% endfor %}
-    </fieldset>
-    <div class="submit-row">
-      <input type="submit" value="Create account" class="default">
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create an account — Healthcare Backend</title>
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap">
+      <a class="mark" href="/">Healthcare Backend</a>
+      <nav><a href="/admin/login/">Log in</a></nav>
     </div>
-  </form>
+  </header>
 
-  <p>Already have an account? <a href="{% url 'admin:login' %}">Log in</a>.</p>
-</div>
-{% endblock %}
+  <main class="wrap wrap--narrow">
+    <div class="panel">
+      <h1>Create an account</h1>
+      <p class="lede">The patients and assignments you add will be visible only
+      to you. The doctor directory is shared for reading.</p>
+
+      {% if form.non_field_errors %}
+        <div class="alert"><ul>
+          {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+        </ul></div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="field{% if field.errors %} field--invalid{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}
+            {% if field.errors %}
+              <ul class="errors">
+                {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn--primary btn--block">Create account</button>
+      </form>
+
+      <p class="foot">Already have an account? <a href="/admin/login/">Log in</a>.</p>
+    </div>
+  </main>
+</body>
+</html>

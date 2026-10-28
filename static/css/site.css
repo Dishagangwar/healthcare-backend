@@ -1,0 +1,149 @@
+/*
+    The two public pages: the landing page and sign-up.
+
+    Same palette as admin-theme.css, so a visitor who signs up does not
+    feel handed off to a different product when the admin loads.
+*/
+
+:root {
+    --brand: #0f766e;
+    --brand-strong: #134e4a;
+    --brand-soft: #ecfdf5;
+    --brand-ink: #ffffff;
+
+    --bg: #f7f9f9;
+    --surface: #ffffff;
+    --ink: #1f2328;
+    --ink-muted: #5b6470;
+    --line: #e2e6e8;
+
+    --danger: #b42318;
+    --danger-soft: #fef3f2;
+
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 8px 24px rgba(16, 24, 40, .06);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --brand: #2dd4bf;
+        --brand-strong: #5eead4;
+        --brand-soft: #0f2522;
+        --brand-ink: #06201c;
+
+        --bg: #0f1112;
+        --surface: #17191b;
+        --ink: #e9ecee;
+        --ink-muted: #a3acb3;
+        --line: #272b2e;
+
+        --danger: #fda29b;
+        --danger-soft: #2a1513;
+
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--brand); }
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+.wrap--narrow { max-width: 440px; }
+
+/* --- masthead ------------------------------------------------------- */
+
+.masthead {
+    background: var(--brand-strong);
+    color: #fff;
+    padding: 14px 0;
+}
+.masthead .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.masthead a { color: #fff; text-decoration: none; }
+.masthead .mark { font-weight: 650; letter-spacing: -.01em; }
+.masthead nav { display: flex; gap: 18px; font-size: .9rem; }
+.masthead nav a { opacity: .85; }
+.masthead nav a:hover { opacity: 1; }
+
+/* --- hero ----------------------------------------------------------- */
+
+.hero { padding: 56px 0 8px; }
+.hero h1 { font-size: 2rem; line-height: 1.2; letter-spacing: -.025em; margin: 0 0 .5rem; }
+.hero p { color: var(--ink-muted); font-size: 1.05rem; margin: 0 0 1.5rem; max-width: 52ch; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.btn {
+    display: inline-block; padding: 10px 18px; border-radius: 9px;
+    text-decoration: none; font-weight: 600; font-size: .95rem;
+    border: 1px solid var(--line); color: var(--ink); background: var(--surface);
+}
+.btn:hover { border-color: var(--brand); }
+.btn--primary { background: var(--brand); color: var(--brand-ink); border-color: transparent; }
+.btn--primary:hover { background: var(--brand-strong); border-color: transparent; }
+.btn--block { display: block; width: 100%; text-align: center; border: 0; cursor: pointer; font: inherit; font-weight: 600; padding: 11px 18px; }
+
+/* --- cards ---------------------------------------------------------- */
+
+.cards { display: grid; gap: 14px; padding: 36px 0; }
+@media (min-width: 620px) { .cards { grid-template-columns: 1fr 1fr; } }
+
+.card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 18px 20px;
+}
+.card h2 { font-size: .95rem; margin: 0 0 .4rem; letter-spacing: -.01em; }
+.card p { color: var(--ink-muted); font-size: .92rem; margin: 0; }
+.card--wide { grid-column: 1 / -1; }
+.card .actions { margin-top: 14px; }
+
+code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .875em; background: var(--brand-soft); color: var(--brand);
+    padding: 1px 5px; border-radius: 5px;
+}
+
+/* --- sign-up panel -------------------------------------------------- */
+
+.panel {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 28px; margin: 48px 0 24px;
+}
+.panel h1 { font-size: 1.3rem; margin: 0 0 .3rem; letter-spacing: -.02em; }
+.panel .lede { color: var(--ink-muted); font-size: .92rem; margin: 0 0 1.4rem; }
+
+.field { margin-bottom: 15px; }
+.field label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 5px; }
+.field input {
+    width: 100%; padding: 10px 12px; font: inherit;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 9px;
+}
+.field input:focus { outline: 2px solid var(--brand); outline-offset: 1px; border-color: transparent; }
+.field .help { color: var(--ink-muted); font-size: .8rem; margin-top: 5px; }
+
+.errors { list-style: none; margin: 6px 0 0; padding: 0; }
+.errors li { color: var(--danger); font-size: .825rem; }
+.field--invalid input { border-color: var(--danger); }
+
+.alert {
+    background: var(--danger-soft); border: 1px solid var(--danger);
+    color: var(--danger); border-radius: 9px; padding: 10px 12px;
+    font-size: .875rem; margin-bottom: 16px;
+}
+.alert ul { margin: 0; padding-left: 18px; }
+
+.panel .foot { text-align: center; font-size: .9rem; color: var(--ink-muted); margin: 18px 0 0; }
+
+footer.site { color: var(--ink-muted); font-size: .85rem; padding: 8px 0 48px; }
+footer.site a { color: inherit; }

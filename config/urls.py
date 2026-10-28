@@ -10,6 +10,13 @@ from drf_spectacular.views import (
 from apps.accounts.web import LandingView, RegisterPageView
 
 
+# The admin is the only interface this project has, so it gets the
+# project's name rather than Django's.
+admin.site.site_header = "Healthcare Backend"
+admin.site.site_title = "Healthcare Backend"
+admin.site.index_title = "Records"
+
+
 def health_check(_request):
     """Liveness probe for deployment tooling."""
     return JsonResponse({"success": True, "status": "healthy"})

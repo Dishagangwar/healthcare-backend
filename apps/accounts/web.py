@@ -5,7 +5,6 @@ can get an account without being handed shared credentials, and land
 somewhere they can actually use.
 """
 
-from django.contrib import admin
 from django.contrib.auth import login
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -30,14 +29,6 @@ class RegisterPageView(FormView):
         if request.user.is_authenticated:
             return redirect(self.success_url)
         return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        # Borrow the admin's chrome so the page the visitor arrives from
-        # and the one they land on look like the same site.
-        context = admin.site.each_context(self.request)
-        context.update(super().get_context_data(**kwargs))
-        context["title"] = "Create an account"
-        return context
 
     def form_valid(self, form):
         user = form.save()
