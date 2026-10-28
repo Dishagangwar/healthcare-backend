@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Healthcare Backend API</title>
+  <style>
+    :root {
+      --bg: #fbfbfd; --card: #fff; --ink: #1b1b1f; --muted: #5c5c66;
+      --line: #e3e3e8; --accent: #0b6e4f; --accent-ink: #fff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16161a; --card: #1e1e24; --ink: #ececf1; --muted: #a0a0ad;
+        --line: #2e2e38; --accent: #2f9e73; --accent-ink: #06130e;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 48px 16px; background: var(--bg); color: var(--ink);
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 1.75rem; margin: 0 0 .25rem; letter-spacing: -.02em; }
+    .sub { color: var(--muted); margin: 0 0 2rem; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 1rem; margin: 0 0 .5rem; }
+    .card p { color: var(--muted); margin: 0 0 1rem; font-size: .925rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    a.btn {
+      display: inline-block; padding: 9px 16px; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: .925rem;
+      border: 1px solid var(--line); color: var(--ink);
+    }
+    a.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+    dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: .925rem; }
+    dt { color: var(--muted); }
+    dd { margin: 0; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875em; }
+    footer { color: var(--muted); font-size: .85rem; text-align: center; margin-top: 2rem; }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Healthcare Backend API</h1>
+    <p class="sub">Patient and doctor records, with JWT authentication. Every record
+    belongs to whoever created it.</p>
+
+    <div class="card">
+      <h2>Get an account</h2>
+      <p>Sign up and you get a workspace of your own: the patients and assignments
+      you add are yours alone, and the doctor directory is shared for reading.</p>
+      <div class="actions">
+        <a class="btn primary" href="{% url 'register' %}">Create an account</a>
+        <a class="btn" href="{% url 'admin:login' %}">Log in</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Or look around first</h2>
+      <p>A shared demo account, already holding sample patients, doctors and
+      assignments. It cannot delete anything or see other accounts.</p>
+      <dl>
+        <dt>Email</dt><dd><code>demo@example.com</code></dd>
+        <dt>Password</dt><dd><code>healthcare-demo-2026</code></dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2>The API</h2>
+      <p>The same credentials work against the API. Call
+      <code>POST /api/auth/login/</code>, then send the access token as a bearer
+      token — or register a new account there instead.</p>
+      <div class="actions">
+        <a class="btn" href="/api/docs/">Swagger UI</a>
+        <a class="btn" href="/api/redoc/">ReDoc</a>
+        <a class="btn" href="/api/schema/">OpenAPI schema</a>
+      </div>
+    </div>
+
+    <footer><a href="/health/">Health check</a></footer>
+  </main>
+</body>
+</html>

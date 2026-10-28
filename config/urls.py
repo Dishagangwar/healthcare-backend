@@ -1,12 +1,13 @@
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
-from django.views.generic.base import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+
+from apps.accounts.web import LandingView, RegisterPageView
 
 
 def health_check(_request):
@@ -15,11 +16,11 @@ def health_check(_request):
 
 
 urlpatterns = [
-    # A JSON API has no front page, so the bare domain goes to the admin
-    # login rather than returning 404. Deliberately a temporary redirect:
-    # browsers cache a permanent one indefinitely, which would be awkward
-    # to undo if the root ever serves something of its own.
-    path("", RedirectView.as_view(pattern_name="admin:index", permanent=False)),
+    # The only browser-facing pages: a front door, and sign-up. Both exist
+    # so a visitor can get an account of their own instead of sharing the
+    # demo credentials.
+    path("", LandingView.as_view(), name="landing"),
+    path("register/", RegisterPageView.as_view(), name="register"),
     path("admin/", admin.site.urls),
     path("health/", health_check, name="health-check"),
     # API

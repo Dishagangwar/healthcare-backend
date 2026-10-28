@@ -14,13 +14,22 @@ for reading, but only the user who added a doctor may change or remove that reco
 |---|---|
 | Interactive docs | [`/api/docs/`](https://healthcarebackend-woad.vercel.app/api/docs/) |
 | OpenAPI schema | [`/api/schema/`](https://healthcarebackend-woad.vercel.app/api/schema/) |
-| Admin | [`/admin/`](https://healthcarebackend-woad.vercel.app/admin/) — the bare domain redirects here |
+| Admin | [`/admin/`](https://healthcarebackend-woad.vercel.app/admin/) |
+| Sign up | [`/register/`](https://healthcarebackend-woad.vercel.app/register/) |
 | Health check | [`/health/`](https://healthcarebackend-woad.vercel.app/health/) |
 
 Deployed on Vercel against a Neon PostgreSQL database; see
 [Deploying to Vercel](#deploying-to-vercel) for how it is wired up.
 
 ### Sign in and try it
+
+The front page offers two ways in. **[Create an account](https://healthcarebackend-woad.vercel.app/register/)**
+and you get a workspace of your own: the patients and assignments you add are
+visible only to you, and you can delete them. The doctor directory is shared for
+reading, so the entries already on file can be assigned straight away — the same
+ownership rules the API enforces.
+
+Or use the shared demo account, which already holds sample data:
 
 | | |
 |---|---|
@@ -35,11 +44,11 @@ Those credentials work in both places:
   to `POST /api/auth/login/`, paste the returned `access` token into
   **Authorize**, and every endpoint becomes callable from the page.
 
-The account owns the seeded records, so the API answers with data instead of an
-empty list. It is deliberately not a superuser: it can add and edit patients,
-doctors and assignments, but cannot delete them, and cannot see or create user
-accounts. `python manage.py seed_demo` restores the sample data if a visitor
-leaves it in a mess.
+The demo account owns the seeded records, so the API answers with data instead
+of an empty list. Neither it nor a registered account is a superuser: neither can
+see or create user accounts. The demo account additionally cannot delete, since
+its records are shared with every other visitor —
+`python manage.py seed_demo` restores them if someone leaves a mess.
 
 ---
 
@@ -66,7 +75,8 @@ leaves it in a mess.
 hospital_management/
 ├── config/                 # Project settings, root URLconf, WSGI/ASGI
 │   ├── settings.py         # All deployment values read from the environment
-│   └── urls.py             # Mounts /api/auth, /api/patients, /api/doctors, /api/mappings
+│   └── urls.py             # Landing page, sign-up, admin, and the /api routes
+├── templates/              # The only two HTML pages: landing and sign-up
 ├── api/
 │   └── index.py            # WSGI entrypoint for Vercel's Python runtime
 ├── core/                   # Cross-cutting code shared by every app
@@ -76,10 +86,13 @@ hospital_management/
 │   ├── permissions.py      # IsOwner object-level permission
 │   ├── validators.py       # Shared phone-number format rule
 │   ├── schema.py           # OpenAPI generation aware of the response envelopes
+│   ├── admin.py            # Admin bases that apply the same ownership rules
 │   ├── fields.py           # PhoneNumberField: normalises before validating
 │   └── exceptions.py       # Single error envelope for every failure
 ├── apps/
 │   ├── accounts/           # Custom email-based User, register/login/refresh/profile
+│   │   ├── web.py          # Landing and sign-up pages
+│   │   ├── workspace.py    # What a self-service account may do
 │   │   └── management/     # seed_demo: idempotent sample data
 │   ├── patients/           # Patient model, serializer, views
 │   ├── doctors/            # Doctor model, serializer, views
