@@ -30,6 +30,8 @@ hospital_management/
 ├── config/                 # Project settings, root URLconf, WSGI/ASGI
 │   ├── settings.py         # All deployment values read from the environment
 │   └── urls.py             # Mounts /api/auth, /api/patients, /api/doctors, /api/mappings
+├── api/
+│   └── index.py            # WSGI entrypoint for Vercel's Python runtime
 ├── core/                   # Cross-cutting code shared by every app
 │   ├── models.py           # TimeStampedModel abstract base
 │   ├── mixins.py           # Uniform {"success": true, "data": ...} responses
@@ -48,6 +50,7 @@ hospital_management/
 ├── tests/                  # 82 API tests covering every endpoint
 ├── postman_collection.json # Importable request collection
 ├── .env.example            # Template for required environment variables
+├── vercel.json             # Routes every path to the Django application
 └── requirements.txt
 ```
 
@@ -172,6 +175,101 @@ every endpoint against a real database:
 ```bash
 python manage.py test tests
 ```
+
+---
+
+## Deploying to Vercel
+
+Vercel runs the project as a serverless function rather than a long-lived
+server, which is worth knowing before you start:
+
+- **The database is not included.** Vercel has no Postgres of its own, so the
+  database lives with a managed provider — [Neon](https://neon.tech) and
+  [Supabase](https://supabase.com) both have a free tier and hand out a
+  connection URL.
+- **The filesystem is read-only**, so nothing can be collected or written at
+  runtime. WhiteNoise serves the admin and Swagger UI assets from inside the
+  function instead.
+- **Migrations do not run on deploy.** You run them yourself against the hosted
+  database, from your own machine (step 4 below).
+- **The first request after an idle period is slow** — the function has to cold
+  start. Fine for a demo or a portfolio API; a platform with a persistent
+  process (Railway, Fly.io, Render) suits a production workload better.
+
+### 1. Create the database
+
+Create a Postgres instance with your provider and copy its connection URL. Use
+the **pooled** URL if the provider offers one, since every function invocation
+opens its own connection.
+
+```
+postgres://user:password@host/dbname?sslmode=require
+```
+
+### 2. Set the environment variables
+
+In the Vercel project, under **Settings -> Environment Variables**, set at least:
+
+| Variable | Value |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | A fresh 50-character key (see below) |
+| `DJANGO_DEBUG` | `False` |
+| `DATABASE_URL` | The connection URL from step 1 |
+
+```bash
+python -c "from django.core.management.utils import get_random_secret_key as k; print(k())"
+```
+
+`ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` need no configuration: the settings
+read Vercel's own `VERCEL_URL` and `VERCEL_PROJECT_PRODUCTION_URL`, so the
+production domain and every preview deployment are covered. Anything else from
+`.env.example` — `JWT_ACCESS_MINUTES`, `THROTTLE_USER`, `API_PAGE_SIZE` — is
+optional and falls back to its default.
+
+Do not upload `.env`; it is excluded by `.vercelignore`, and Vercel's own
+variables take its place.
+
+### 3. Deploy
+
+```bash
+npm i -g vercel
+vercel        # preview deployment
+vercel --prod # production
+```
+
+Or import the Git repository at [vercel.com/new](https://vercel.com/new) and let
+every push deploy itself. `vercel.json` routes every path to `api/index.py`, so
+no framework preset or build command is needed.
+
+### 4. Migrate the hosted database
+
+The function cannot migrate itself, so point your local checkout at the hosted
+database and run the migrations from there once:
+
+```bash
+DATABASE_URL='postgres://user:password@host/dbname?sslmode=require' \
+  python manage.py migrate
+```
+
+Optionally, with the same `DATABASE_URL` in front of each:
+
+```bash
+python manage.py createsuperuser   # for /admin/
+python manage.py seed_demo         # demo data
+```
+
+Repeat the `migrate` line whenever a deploy adds a migration.
+
+### 5. Confirm it is up
+
+```bash
+curl https://your-app.vercel.app/health/
+# {"success": true, "status": "healthy"}
+```
+
+Then open `https://your-app.vercel.app/api/docs/` for the Swagger UI. If a
+request fails, `vercel logs <deployment-url>` shows the traceback: the logging
+config writes to the console, which is where Vercel collects it.
 
 ---
 
