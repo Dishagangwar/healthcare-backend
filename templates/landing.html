@@ -33,9 +33,6 @@
       border: 1px solid var(--line); color: var(--ink);
     }
     a.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
-    dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: .925rem; }
-    dt { color: var(--muted); }
-    dd { margin: 0; }
     code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875em; }
     footer { color: var(--muted); font-size: .85rem; text-align: center; margin-top: 2rem; }
     footer a { color: inherit; }
@@ -58,20 +55,11 @@
     </div>
 
     <div class="card">
-      <h2>Or look around first</h2>
-      <p>A shared demo account, already holding sample patients, doctors and
-      assignments. It cannot delete anything or see other accounts.</p>
-      <dl>
-        <dt>Email</dt><dd><code>demo@example.com</code></dd>
-        <dt>Password</dt><dd><code>healthcare-demo-2026</code></dd>
-      </dl>
-    </div>
-
-    <div class="card">
       <h2>The API</h2>
-      <p>The same credentials work against the API. Call
+      <p>The same account works against the API. Call
       <code>POST /api/auth/login/</code>, then send the access token as a bearer
-      token — or register a new account there instead.</p>
+      token — or register there instead, with
+      <code>POST /api/auth/register/</code>.</p>
       <div class="actions">
         <a class="btn" href="/api/docs/">Swagger UI</a>
         <a class="btn" href="/api/redoc/">ReDoc</a>
